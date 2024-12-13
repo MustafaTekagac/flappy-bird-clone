@@ -30,6 +30,7 @@
     <div class="controls">
         <button id="startButton">Start</button>
         <button id="stopButton">Stop</button>
+        <button id="shareButton">Share Score on Twitter</button> <!-- Yeni buton eklendi -->
     </div>
 
     <script>
@@ -37,6 +38,7 @@
         const ctx = canvas.getContext('2d');
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
+        const shareButton = document.getElementById('shareButton'); // Yeni buton seçildi
 
         // Canvas dimensions
         canvas.width = 400;
@@ -135,6 +137,12 @@
             frameCount++;
             if (gameRunning) requestAnimationFrame(updateGame);
         }
+
+        // Yeni skor paylaşma fonksiyonu
+        shareButton.addEventListener('click', () => {
+            const tweetUrl = `https://twitter.com/intent/tweet?text=I just scored ${score} points in my Flappy Bird clone! Can you beat my score?`;
+            window.open(tweetUrl, '_blank');
+        });
     </script>
 </body>
 </html>
