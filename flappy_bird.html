@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird Clone</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: skyblue;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="controls">
+        <button id="startButton">Start</button>
+        <button id="stopButton">Stop</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+
+        // Canvas dimensions
+        canvas.width = 400;
+        canvas.height = 600;
+
+        // Game variables
+        let bird = { x: 50, y: 300, width: 20, height: 20, velocity: 0, gravity: 0.5, jump: -8 };
+        let pipes = [];
+        let pipeWidth = 50;
+        let pipeGap = 120;
+        let frameCount = 0;
+        let score = 0;
+        let gameRunning = false;
+
+        // Start and stop game controls
+        startButton.addEventListener('click', () => {
+            if (!gameRunning) {
+                resetGame();
+                gameRunning = true;
+                updateGame();
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            gameRunning = false;
+        });
+
+        // Key and touch controls
+        document.addEventListener('keydown', () => {
+            if (gameRunning) bird.velocity = bird.jump;
+        });
+
+        document.addEventListener('touchstart', () => {
+            if (gameRunning) bird.velocity = bird.jump;
+        });
+
+        function spawnPipe() {
+            const topHeight = Math.random() * (canvas.height - pipeGap - 50) + 20;
+            pipes.push({ x: canvas.width, top: topHeight, bottom: topHeight + pipeGap });
+        }
+
+        function resetGame() {
+            bird = { x: 50, y: 300, width: 20, height: 20, velocity: 0, gravity: 0.5, jump: -8 };
+            pipes = [];
+            frameCount = 0;
+            score = 0;
+        }
+
+        function updateGame() {
+            if (!gameRunning) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw bird
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+
+            // Spawn and update pipes
+            if (frameCount % 90 === 0) spawnPipe();
+
+            pipes.forEach((pipe, index) => {
+                pipe.x -= 2; // Move pipe
+
+                // Draw pipes
+                ctx.fillStyle = 'green';
+                ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+                ctx.fillRect(pipe.x, pipe.bottom, pipeWidth, canvas.height - pipe.bottom);
+
+                // Collision detection
+                if (
+                    bird.x < pipe.x + pipeWidth &&
+                    bird.x + bird.width > pipe.x &&
+                    (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)
+                ) {
+                    gameRunning = false;
+                }
+
+                // Remove off-screen pipes and increment score
+                if (pipe.x + pipeWidth < 0) {
+                    pipes.splice(index, 1);
+                    score++;
+                }
+            });
+
+            // Check ground collision
+            if (bird.y + bird.height > canvas.height || bird.y < 0) gameRunning = false;
+
+            // Draw score
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+
+            frameCount++;
+            if (gameRunning) requestAnimationFrame(updateGame);
+        }
+    </script>
+</body>
+</html>
